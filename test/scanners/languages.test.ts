@@ -59,4 +59,24 @@ describe("languages scanner", () => {
     expect(model.conventions.testRunner).toBe("cargo test");
     expect(model.conventions.formatter).toBe("rustfmt");
   });
+
+  it("detects Docker from Dockerfile + compose + dockerignore", async () => {
+    const model = await scan(resolve(fixtures, "docker-app"));
+    expect(model.langTooling.docker).not.toBeNull();
+    expect(model.langTooling.docker!.hasDockerfile).toBe(true);
+    expect(model.langTooling.docker!.hasCompose).toBe(true);
+    expect(model.langTooling.docker!.hasDockerignore).toBe(true);
+  });
+
+  it("detects .env.example file", async () => {
+    const model = await scan(resolve(fixtures, "env-app"));
+    expect(model.langTooling.env).not.toBeNull();
+    expect(model.langTooling.env!.hasEnvExample).toBe(true);
+  });
+
+  it("returns null for docker on non-docker project", async () => {
+    const model = await scan(resolve(fixtures, "react-app"));
+    expect(model.langTooling.docker).toBeNull();
+    expect(model.langTooling.env).toBeNull();
+  });
 });

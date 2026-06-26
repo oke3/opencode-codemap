@@ -7,7 +7,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ScannerPlugin, ScanContext, ScanResult } from "../core/scanner.js";
 import type { FileStructure } from "../core/project.js";
-import type { LanguageTooling, PythonInfo, GoInfo, RustInfo } from "../core/project.js";
+import type { LanguageTooling, PythonInfo, GoInfo, RustInfo, DockerInfo, EnvInfo } from "../core/project.js";
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -105,6 +105,26 @@ function detectRust(root: string): RustInfo | null {
   return { linter };
 }
 
+// ── Docker detection ─────────────────────────────────────
+
+function detectDocker(root: string): DockerInfo | null {
+  const hasDockerfile = existsSync(join(root, "Dockerfile"));
+  const hasCompose = existsSync(join(root, "docker-compose.yml")) || existsSync(join(root, "docker-compose.yaml"));
+  const hasDockerignore = existsSync(join(root, ".dockerignore"));
+
+  if (!hasDockerfile && !hasCompose && !hasDockerignore) return null;
+  return { hasDockerfile, hasCompose, hasDockerignore };
+}
+
+// ── Environment detection ────────────────────────────────
+
+function detectEnv(root: string): EnvInfo | null {
+  const hasEnvExample = existsSync(join(root, ".env.example")) ||
+    existsSync(join(root, ".env.sample")) ||
+    existsSync(join(root, ".env.template"));
+  return hasEnvExample ? { hasEnvExample } : null;
+}
+
 // ── Pick primary language ────────────────────────────────
 
 function pickPrimary(
@@ -136,6 +156,8 @@ export const languagesScanner: ScannerPlugin = {
     const python = detectPython(root);
     const go = detectGo(root);
     const rust = detectRust(root);
+    const docker = detectDocker(root);
+    const env = detectEnv(root);
 
     // If we have a file scanner result in context, use extensions
     const fileExts: Record<string, number> = {};
@@ -145,6 +167,8 @@ export const languagesScanner: ScannerPlugin = {
       python,
       go,
       rust,
+      docker,
+      env,
     };
 
     return { type: "languages", data };

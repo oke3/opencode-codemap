@@ -46,12 +46,24 @@ export interface RustInfo {
   linter: string | null;
 }
 
+export interface DockerInfo {
+  hasDockerfile: boolean;
+  hasCompose: boolean;
+  hasDockerignore: boolean;
+}
+
+export interface EnvInfo {
+  hasEnvExample: boolean;
+}
+
 export interface LanguageTooling {
   /** Primary language detected from project config files */
   primary: string | null;
   python: PythonInfo | null;
   go: GoInfo | null;
   rust: RustInfo | null;
+  docker: DockerInfo | null;
+  env: EnvInfo | null;
 }
 
 export interface ProjectModel {

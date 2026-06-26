@@ -21,6 +21,7 @@ import { agentsGenerator } from "./generators/agents.js";
 import { configGenerator } from "./generators/config.js";
 import { agentsConfigGenerator } from "./generators/agents-config.js";
 import { commandsGenerator } from "./generators/commands.js";
+import { multiToolGenerator } from "./generators/multi-tool.js";
 
 // ── Default plugins ──────────────────────────────────────
 
@@ -35,6 +36,7 @@ export const defaultGenerators: GeneratorPlugin[] = [
   configGenerator,
   agentsConfigGenerator,
   commandsGenerator,
+  multiToolGenerator,
 ];
 
 // ── Public API ───────────────────────────────────────────
@@ -96,7 +98,7 @@ export async function scan(
       detected: fws?.detected ?? [],
     },
     conventions,
-    langTooling: langTooling ?? { primary: null, python: null, go: null, rust: null },
+    langTooling: langTooling ?? { primary: null, python: null, go: null, rust: null, docker: null, env: null },
     raw,
   };
 
