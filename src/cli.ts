@@ -14,6 +14,7 @@
 
 import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { scan, generate, buildProject } from "./index.js";
 import type { GeneratedFile } from "./core/generator.js";
@@ -120,10 +121,10 @@ const sharedFlags = (cmd: Command) =>
 
 // ── App ──────────────────────────────────────────────────
 
-const pkg = {
-  version: "0.1.0",
-  description: "Scan any codebase, auto-generate OpenCode config.",
-};
+const __dirname = fileURLToPath(new URL(".", import.meta.url));
+const pkg = JSON.parse(
+  readFileSync(join(__dirname, "..", "package.json"), "utf-8"),
+);
 
 const program = new Command();
 

@@ -102,6 +102,16 @@ export async function scan(
     raw,
   };
 
+  // Fallback: derive primary language from file extensions
+  // when no project config files (pyproject.toml, go.mod, Cargo.toml) exist
+  if (!model.langTooling.primary && model.fileStructure.totalFiles > 0) {
+    const ext = Object.entries(model.fileStructure.languages)
+      .sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (ext === ".py") model.langTooling.primary = "Python";
+    else if (ext === ".go") model.langTooling.primary = "Go";
+    else if (ext === ".rs") model.langTooling.primary = "Rust";
+  }
+
   return model;
 }
 

@@ -104,5 +104,3 @@ export const configGenerator: GeneratorPlugin = {
     }];
   },
 };
-
-// Ponytail: inline require for package.json read to avoid extra imports

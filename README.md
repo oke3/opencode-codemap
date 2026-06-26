@@ -202,7 +202,7 @@ git clone https://github.com/oke3/opencode-codemap
 cd opencode-codemap
 npm install
 npm run dev        # watch mode
-npm test           # 27+ tests
+npm test           # 33+ tests
 npm run build      # production build
 npm run lint       # type-check
 ```
