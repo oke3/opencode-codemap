@@ -17,6 +17,9 @@ import type { GeneratedFile } from "./core/generator.js";
 import { filesScanner } from "./scanners/files.js";
 import { frameworksScanner } from "./scanners/frameworks.js";
 import { agentsGenerator } from "./generators/agents.js";
+import { configGenerator } from "./generators/config.js";
+import { agentsConfigGenerator } from "./generators/agents-config.js";
+import { commandsGenerator } from "./generators/commands.js";
 
 // ── Default plugins ──────────────────────────────────────
 
@@ -27,6 +30,9 @@ export const defaultScanners: ScannerPlugin[] = [
 
 export const defaultGenerators: GeneratorPlugin[] = [
   agentsGenerator,
+  configGenerator,
+  agentsConfigGenerator,
+  commandsGenerator,
 ];
 
 // ── Public API ───────────────────────────────────────────

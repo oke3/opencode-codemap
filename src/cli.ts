@@ -10,10 +10,16 @@
  *   opencode-codemap init [path]      # interactive scan + generate
  */
 
-import { writeFileSync, readFileSync, existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { writeFileSync, readFileSync, existsSync, mkdirSync } from "node:fs";
+import { join, resolve, dirname } from "node:path";
 import { Command } from "commander";
 import { scan, generate, buildProject } from "./index.js";
+
+function writeFile(dir: string, path: string, content: string) {
+  const abs = join(dir, path);
+  mkdirSync(dirname(abs), { recursive: true });
+  writeFileSync(abs, content, "utf-8");
+}
 
 const pkg = { version: "0.1.0", description: "Scan any codebase, auto-generate OpenCode config. Solves the cold start problem." };
 
@@ -38,8 +44,7 @@ program
     const { model, files } = await buildProject(root);
 
     for (const file of files) {
-      const filePath = join(outDir, file.path);
-      writeFileSync(filePath, file.content, "utf-8");
+      writeFile(outDir, file.path, file.content);
       console.log(`  ✓ ${file.path}`);
     }
 
@@ -79,8 +84,7 @@ program
     const model = JSON.parse(readFileSync(scanPath, "utf-8"));
     const files = await generate(model);
     for (const file of files) {
-      const filePath = join(root, file.path);
-      writeFileSync(filePath, file.content, "utf-8");
+      writeFile(root, file.path, file.content);
       console.log(`  ✓ ${file.path}`);
     }
     console.log(`\nDone. Generated ${files.length} file(s).`);
