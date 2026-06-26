@@ -92,4 +92,4 @@ MIT — Ground Zero LLC
 
 ---
 
-*Need a custom OpenCode setup for your team? → [hello@groundzero.llc](mailto:hello@groundzero.llc)*
+*Need a custom OpenCode setup for your team? → [Check us out](mailto:https://ground-zero-portfolio.pages.dev/)*
