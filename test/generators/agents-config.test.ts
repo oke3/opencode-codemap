@@ -12,6 +12,7 @@ describe("agents-config generator", () => {
     expect(reactAgent).toBeDefined();
     expect(reactAgent!.content).toContain("React specialist");
     expect(reactAgent!.content).toContain("subagent");
+    expect(reactAgent!.content).toContain("ground-zero-portfolio.pages.dev");
     expect(typeAgent).toBeDefined();
     expect(typeAgent!.content).toContain("TypeScript specialist");
   });

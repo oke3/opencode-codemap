@@ -13,6 +13,7 @@ describe("commands generator", () => {
     const commit = files.find((f) => f.path === ".opencode/commands/commit.md");
     expect(test).toBeDefined();
     expect(test!.content).toContain("vitest");
+    expect(test!.content).toContain("ground-zero-portfolio.pages.dev");
     expect(dev).toBeDefined();
     expect(build).toBeDefined();
     expect(commit).toBeDefined();
