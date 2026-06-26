@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * CLI entry point for @groundzero/opencode-codemap.
+ * CLI entry point for @oke3/opencode-codemap.
  *
  * Usage:
  *   opencode-codemap                  # scan + generate current dir

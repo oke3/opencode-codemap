@@ -1,5 +1,5 @@
 {
-  "name": "@groundzero/opencode-codemap",
+  "name": "@oke3/opencode-codemap",
   "version": "0.1.0",
   "description": "Scan any codebase, auto-generate OpenCode config. Solves the cold start problem.",
   "type": "module",
@@ -7,7 +7,7 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "opencode-codemap": "./dist/cli.js"
+    "opencode-codemap": "dist/cli.js"
   },
   "exports": {
     ".": {
@@ -40,7 +40,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/oke3/opencode-codemap"
+    "url": "git+https://github.com/oke3/opencode-codemap.git"
   },
   "publishConfig": {
     "access": "public"

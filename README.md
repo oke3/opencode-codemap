@@ -1,9 +1,9 @@
-# @groundzero/opencode-codemap
+# @oke3/opencode-codemap
 
 Scan any codebase, auto-generate OpenCode project config. Solves the cold start problem.
 
 ```bash
-npx @groundzero/opencode-codemap
+npx @oke3/opencode-codemap
 ```
 
 ## Why
@@ -14,16 +14,16 @@ Every OpenCode project starts blank. The built-in `/init` generates basic `AGENT
 
 ```bash
 # Quick setup — scan + generate all in one go
-npx @groundzero/opencode-codemap
+npx @oke3/opencode-codemap
 
 # Scan only (saves .scan.json for later use)
-npx @groundzero/opencode-codemap scan
+npx @oke3/opencode-codemap scan
 
 # Generate from existing .scan.json
-npx @groundzero/opencode-codemap generate
+npx @oke3/opencode-codemap generate
 
 # Scan a specific path
-npx @groundzero/opencode-codemap scan ./path/to/project
+npx @oke3/opencode-codemap scan ./path/to/project
 ```
 
 ## What it generates
@@ -62,7 +62,7 @@ Plugin-based. Scanners analyze the project, generators produce config files.
 Add a scanner:
 
 ```ts
-import type { ScannerPlugin } from "@groundzero/opencode-codemap";
+import type { ScannerPlugin } from "@oke3/opencode-codemap";
 
 export const myScanner: ScannerPlugin = {
   name: "my-scanner",
@@ -76,7 +76,7 @@ export const myScanner: ScannerPlugin = {
 Add a generator:
 
 ```ts
-import type { GeneratorPlugin } from "@groundzero/opencode-codemap";
+import type { GeneratorPlugin } from "@oke3/opencode-codemap";
 
 export const myGenerator: GeneratorPlugin = {
   name: "my-generator",
