@@ -39,6 +39,19 @@ jobs:
           always-auth: true
       - run: npm ci
       - run: npm run build
-      - run: npm publish --access public
+      - name: Check if version is already published
+        id: check
+        run: |
+          PUBLISHED=$(npm view @oke3/opencode-codemap version 2>/dev/null || echo "none")
+          LOCAL=$(node -p "require('./package.json').version")
+          echo "published=$PUBLISHED"
+          echo "local=$LOCAL"
+          if [ "$PUBLISHED" != "$LOCAL" ]; then
+            echo "publish=true" >> $GITHUB_OUTPUT
+          else
+            echo "publish=false" >> $GITHUB_OUTPUT
+          fi
+      - if: steps.check.outputs.publish == 'true'
+        run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
