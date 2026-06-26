@@ -31,12 +31,37 @@ export interface Conventions {
   strictMode: boolean;
 }
 
+export interface PythonInfo {
+  testRunner: string | null;
+  linter: string | null;
+  formatter: string | null;
+  buildTool: string | null;
+}
+
+export interface GoInfo {
+  linter: string | null;
+}
+
+export interface RustInfo {
+  linter: string | null;
+}
+
+export interface LanguageTooling {
+  /** Primary language detected from project config files */
+  primary: string | null;
+  python: PythonInfo | null;
+  go: GoInfo | null;
+  rust: RustInfo | null;
+}
+
 export interface ProjectModel {
   root: string;
   name: string;
   fileStructure: FileStructure;
   frameworks: FrameworkInfo;
   conventions: Conventions;
+  /** Language-specific tooling for non-JS projects */
+  langTooling: LanguageTooling;
   /** Raw scan data preserved for generator plugins */
   raw: Record<string, unknown>;
 }

@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "python-app"
+version = "0.1.0"
+description = "A sample Python project for testing"
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["test"]

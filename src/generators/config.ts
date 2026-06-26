@@ -7,6 +7,38 @@ import type { ProjectModel } from "../core/project.js";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+// ── Helpers ──────────────────────────────────────────────
+
+function primaryLanguage(project: ProjectModel): string {
+  if (project.langTooling.primary) return project.langTooling.primary;
+  const langs = project.fileStructure.languages;
+  if (langs[".ts"] || langs[".tsx"]) return "TypeScript";
+  if (langs[".js"] || langs[".jsx"]) return "JavaScript";
+  if (langs[".py"]) return "Python";
+  if (langs[".go"]) return "Go";
+  if (langs[".rs"]) return "Rust";
+  return "Unknown";
+}
+
+function testPermission(testRunner: string | null, lang: string): Record<string, string> {
+  const base: Record<string, string> = { "*": "allow" };
+
+  if (testRunner) {
+    if (lang === "Python") {
+      base[`${testRunner} *`] = "allow";
+    } else if (lang === "Go") {
+      base["go test *"] = "allow";
+    } else if (lang === "Rust") {
+      base["cargo test"] = "allow";
+    } else {
+      base["npm test"] = "allow";
+      base[`${testRunner} *`] = "allow";
+    }
+  }
+
+  return base;
+}
+
 export const configGenerator: GeneratorPlugin = {
   name: "config",
 
@@ -15,21 +47,21 @@ export const configGenerator: GeneratorPlugin = {
       $schema: "https://opencode.ai/config.json",
     };
 
-    // Model suggestions based on framework
+    const lang = primaryLanguage(project);
+
+    // Model suggestions based on language/framework complexity
     const heavyFrameworks = ["Next.js", "Nuxt", "Angular", "SvelteKit", "Remix"];
     const isHeavy = project.frameworks.primary && heavyFrameworks.includes(project.frameworks.primary);
-    config.model = isHeavy ? "anthropic/claude-sonnet-4-5" : "opencode/gpt-5.1-codex";
+    const isSystemsLang = lang === "Go" || lang === "Rust";
+    config.model = isHeavy || isSystemsLang ? "anthropic/claude-sonnet-4-5" : "opencode/gpt-5.1-codex";
 
     // Small model for cheap tasks  
     config.small_model = "anthropic/claude-haiku-4-5";
 
     // Permissions based on project maturity
-    const permissions: Record<string, string | Record<string, string>> = {};
     if (project.conventions.testRunner) {
-      permissions["bash"] = {
-        "*": "allow",
-        "npm test": "allow",
-        [`${project.conventions.testRunner} *`]: "allow",
+      (config as Record<string, unknown>).permission = {
+        bash: testPermission(project.conventions.testRunner, lang),
       };
     }
 
@@ -38,8 +70,8 @@ export const configGenerator: GeneratorPlugin = {
       config.formatter = true;
     }
 
-    // LSP — enable for TypeScript projects
-    if (project.conventions.typescript) {
+    // LSP — enable for TypeScript or Python projects
+    if (project.conventions.typescript || lang === "Python") {
       config.lsp = true;
     }
 
@@ -61,10 +93,6 @@ export const configGenerator: GeneratorPlugin = {
           disabled: false,
         },
       };
-    }
-
-    if (Object.keys(permissions).length > 0) {
-      config.permission = permissions;
     }
 
     const content = JSON.stringify(config, null, 2) + "\n";
