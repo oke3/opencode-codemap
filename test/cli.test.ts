@@ -46,12 +46,10 @@ describe("CLI: update command", () => {
   });
 
   it("detects updated content when project changes", async () => {
-    // Add a new dependency to simulate project change
+    // Change the project name — this always propagates to generated files
     const pkgPath = join(fw, "package.json");
     const orig = readFileSync(pkgPath, "utf-8");
-
-    // Change the project: add a new dep
-    const modified = orig.replace('"vitest"', '"vitest", "new-dep-that-changes-nothing": "^1.0.0"');
+    const modified = orig.replace('"name": "my-react-app"', '"name": "my-react-app-modified"');
     writeFileSync(pkgPath, modified, "utf-8");
 
     // Re-scan and check if any file content differs
@@ -71,8 +69,6 @@ describe("CLI: update command", () => {
     // Restore original
     writeFileSync(pkgPath, orig, "utf-8");
 
-    // The dep change may or may not affect generated content — this test
-    // verifies the comparison logic works, not that a specific file changes
-    expect(typeof hasUpdates).toBe("boolean");
+    expect(hasUpdates).toBe(true);
   });
 });

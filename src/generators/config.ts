@@ -4,8 +4,6 @@
 
 import type { GeneratorPlugin, GeneratedFile } from "../core/generator.js";
 import type { ProjectModel } from "../core/project.js";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -75,10 +73,8 @@ export const configGenerator: GeneratorPlugin = {
       config.lsp = true;
     }
 
-    // Instructions — reference the generated AGENTS.md
-    if (existsSync(join(project.root, "AGENTS.md"))) {
-      config.instructions = ["AGENTS.md"];
-    }
+    // Instructions — reference the generated AGENTS.md (always set, AGENTS.md is always generated)
+    config.instructions = ["AGENTS.md"];
 
     // Default agent
     config.default_agent = "build";

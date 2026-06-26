@@ -39,10 +39,7 @@ function writeFile(dir: string, path: string, content: string) {
 }
 
 function plural(n: number, w: string) {
-  if (n === 1) return `${n} ${w}`;
-  // Handle -ed endings: "skipped" → "skipped", "generated" → "generated"
-  // (invariant for past participles used as adjectives)
-  return `${n} ${w}`;
+  return `${n} ${w}${n === 1 ? "" : "s"}`;
 }
 
 interface CLIOptions {
@@ -191,7 +188,7 @@ sharedFlags(
     const wsCount = model.workspaces?.length ?? 0;
     const wsLabel = wsCount > 0 ? `, ${wsCount} workspace${wsCount > 1 ? "s" : ""}` : "";
     console.log(`  ${dim("found")} ${model.fileStructure.totalFiles} files — ${gray(fw)}${wsLabel}`);
-    process.stdout.write(dim("  gen   "));
+    console.log(dim("  gen"));
   }
 
   const { written, skipped } = renderFiles(files, outDir, options);

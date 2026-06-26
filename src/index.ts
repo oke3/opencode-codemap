@@ -118,14 +118,15 @@ export async function scan(
   // Scan workspaces if monorepo detected
   const monorepo = raw.monorepo as MonorepoData | undefined;
   if (monorepo?.isMonorepo && monorepo.workspaces.length > 0) {
-    const workspaceModels: import("./core/project.js").WorkspaceModel[] = [];
-    for (const ws of monorepo.workspaces) {
-      try {
+    const results = await Promise.allSettled(
+      monorepo.workspaces.map(async (ws) => {
         const wsModel = await scan(ws.root, options);
-        workspaceModels.push({ name: ws.name, root: ws.root, model: wsModel });
-      } catch {
-        // Skip workspaces that fail to scan
-      }
+        return { name: ws.name, root: ws.root, model: wsModel };
+      }),
+    );
+    const workspaceModels: import("./core/project.js").WorkspaceModel[] = [];
+    for (const r of results) {
+      if (r.status === "fulfilled") workspaceModels.push(r.value);
     }
     if (workspaceModels.length > 0) {
       model.workspaces = workspaceModels;

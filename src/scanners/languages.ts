@@ -1,12 +1,10 @@
 /**
  * Language scanner — detects Python, Go, and Rust projects and their tooling.
- * Falls back to file-extension analysis when project config files are absent.
  */
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import type { ScannerPlugin, ScanContext, ScanResult } from "../core/scanner.js";
-import type { FileStructure } from "../core/project.js";
 import type { LanguageTooling, PythonInfo, GoInfo, RustInfo, DockerInfo, EnvInfo } from "../core/project.js";
 
 // ── Helpers ──────────────────────────────────────────────
@@ -131,18 +129,10 @@ function pickPrimary(
   python: PythonInfo | null,
   go: GoInfo | null,
   rust: RustInfo | null,
-  fileExts: Record<string, number>,
 ): string | null {
   if (python) return "Python";
   if (go) return "Go";
   if (rust) return "Rust";
-
-  // Fall back to file extension counts
-  const ext = Object.entries(fileExts).sort((a, b) => b[1] - a[1])[0]?.[0];
-  if (!ext) return null;
-  if (ext === ".py") return "Python";
-  if (ext === ".go") return "Go";
-  if (ext === ".rs") return "Rust";
   return null;
 }
 
@@ -159,11 +149,8 @@ export const languagesScanner: ScannerPlugin = {
     const docker = detectDocker(root);
     const env = detectEnv(root);
 
-    // If we have a file scanner result in context, use extensions
-    const fileExts: Record<string, number> = {};
-
     const data: LanguageTooling = {
-      primary: pickPrimary(python, go, rust, fileExts),
+      primary: pickPrimary(python, go, rust),
       python,
       go,
       rust,
