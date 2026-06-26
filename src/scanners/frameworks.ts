@@ -116,12 +116,37 @@ export const frameworksScanner: ScannerPlugin = {
         "@sveltejs/kit": "SvelteKit",
         "@nestjs/core": "NestJS",
         "@nuxt/kit": "Nuxt",
+        "@builder.io/qwik": "Qwik",
+        "lit": "Lit",
+        "@lit/reactive-element": "Lit",
+        "react-native": "React Native",
+        "expo": "Expo",
       };
 
       for (const [pkgName, frameworkName] of Object.entries(knownFrameworks)) {
         if (allDeps[pkgName]) {
           detected.push({ name: frameworkName, version: allDeps[pkgName] });
         }
+      }
+    }
+
+    // Detect tooling and platforms from config files
+    const configChecks: [string, string][] = [
+      ["Tailwind CSS", "tailwind.config.ts"],
+      ["Tailwind CSS", "tailwind.config.js"],
+      ["Tailwind CSS", "tailwind.config.mjs"],
+      ["PostCSS", "postcss.config.js"],
+      ["PostCSS", "postcss.config.ts"],
+      ["PostCSS", "postcss.config.mjs"],
+      ["Prisma", "prisma/schema.prisma"],
+      ["Turbo", "turbo.json"],
+      ["Nx", "nx.json"],
+      ["Lerna", "lerna.json"],
+      ["Flutter", "pubspec.yaml"],
+    ];
+    for (const [name, configPath] of configChecks) {
+      if (existsSync(join(context.projectRoot, configPath)) && !detected.some((d) => d.name === name)) {
+        detected.push({ name, version: null });
       }
     }
 
@@ -147,7 +172,7 @@ export const frameworksScanner: ScannerPlugin = {
     }
 
     // Derive primary framework
-    const priority = ["Next.js", "Astro", "Remix", "Nuxt", "SvelteKit", "React", "Vue", "Angular", "Express", "Fastify", "Hono", "NestJS", "CLI", "Library"];
+    const priority = ["Next.js", "Astro", "Remix", "Nuxt", "SvelteKit", "React", "Vue", "Angular", "Express", "Fastify", "Hono", "NestJS", "Solid", "Qwik", "Lit", "React Native", "Expo", "CLI", "Library"];
     const primary = priority.find((f) => detected.some((d) => d.name === f)) || detected[0]?.name || null;
 
     const data: RawFrameworks = {

@@ -84,6 +84,46 @@ function renderFiles(
   return { skipped, written };
 }
 
+function renderFilesUpdate(
+  files: GeneratedFile[],
+  outDir: string,
+  opts: CLIOptions,
+): { unchanged: number; updated: number; created: number } {
+  let unchanged = 0;
+  let updated = 0;
+  let created = 0;
+
+  for (const file of files) {
+    const abs = join(outDir, file.path);
+    const existing = existsSync(abs) ? readFileSync(abs, "utf-8") : null;
+
+    if (existing === null) {
+      if (opts.dryRun) {
+        if (!opts.quiet) console.log(`  ${green("+")} ${file.path} ${dim("(dry-run)")}`);
+        created++;
+        continue;
+      }
+      writeFile(outDir, file.path, file.content);
+      if (!opts.quiet) console.log(`  ${green("+")} ${file.path}`);
+      created++;
+    } else if (existing === file.content) {
+      if (!opts.quiet) console.log(`  ${green("✓")} ${file.path} ${dim("unchanged")}`);
+      unchanged++;
+    } else {
+      if (opts.dryRun) {
+        if (!opts.quiet) console.log(`  ${yellow("~")} ${file.path} ${dim("(would update)")}`);
+        updated++;
+        continue;
+      }
+      writeFile(outDir, file.path, file.content);
+      if (!opts.quiet) console.log(`  ${yellow("~")} ${file.path} ${dim("updated")}`);
+      updated++;
+    }
+  }
+
+  return { unchanged, updated, created };
+}
+
 function printSummary(
   modelName: string,
   files: GeneratedFile[],
@@ -203,6 +243,39 @@ sharedFlags(
   const files = await generate(model);
   const { written, skipped } = renderFiles(files, outDir, options);
   printSummary(model.name, files, written, skipped, options);
+});
+
+// ── Update subcommand ────────────────────────────────────
+
+sharedFlags(
+  program
+    .command("update")
+    .description("Re-scan and update changed files (preserves manual edits)")
+    .argument("[path]", "project root", "."),
+).action(async (path: string, options: CLIOptions) => {
+  const root = resolve(path);
+  const outDir = resolve(options.output ?? root);
+
+  if (!options.quiet) console.log(bold(cyan("codemap update")) + dim(" — refresh OpenCode config\n"));
+  if (!options.quiet) console.log(`  ${dim("scan")}  ${root}`);
+
+  const { model, files } = await buildProject(root);
+
+  if (!options.quiet) {
+    const fw = model.frameworks.primary ?? "no framework detected";
+    console.log(`  ${dim("found")} ${model.fileStructure.totalFiles} files — ${gray(fw)}`);
+    process.stdout.write(dim("  gen   "));
+  }
+
+  const { unchanged, updated, created } = renderFilesUpdate(files, outDir, options);
+  if (!options.quiet) {
+    const parts: string[] = [];
+    if (unchanged > 0) parts.push(`${green(String(unchanged))} unchanged`);
+    if (updated > 0) parts.push(`${yellow(String(updated))} updated`);
+    if (created > 0) parts.push(`${green(String(created))} new`);
+    const dryLabel = options.dryRun ? dim(" (dry-run)") : "";
+    console.log(`\n${bold(cyan("done"))}  ${bold(model.name)} — ${parts.join(", ")}${dryLabel}`);
+  }
 });
 
 // ── Parse ────────────────────────────────────────────────

@@ -37,4 +37,21 @@ describe("framework scanner", () => {
     const model = await scan(resolve(fixtures, "cli-tool"));
     expect(model.conventions.linter).toBe("tsc");
   });
+
+  // ── #3: More project types ──────────────────────────────
+
+  it("detects Solid, Lit, React Native from deps", async () => {
+    const model = await scan(resolve(fixtures, "fullstack-app"));
+    expect(model.frameworks.detected.some((f) => f.name === "Solid")).toBe(true);
+    expect(model.frameworks.detected.some((f) => f.name === "Lit")).toBe(true);
+    expect(model.frameworks.detected.some((f) => f.name === "React Native")).toBe(true);
+  });
+
+  it("detects Tailwind CSS, PostCSS, Prisma, Turbo from config files", async () => {
+    const model = await scan(resolve(fixtures, "fullstack-app"));
+    expect(model.frameworks.detected.some((f) => f.name === "Tailwind CSS")).toBe(true);
+    expect(model.frameworks.detected.some((f) => f.name === "PostCSS")).toBe(true);
+    expect(model.frameworks.detected.some((f) => f.name === "Prisma")).toBe(true);
+    expect(model.frameworks.detected.some((f) => f.name === "Turbo")).toBe(true);
+  });
 });

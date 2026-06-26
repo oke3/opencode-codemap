@@ -1,0 +1,9 @@
+{
+  "name": "fullstack-app",
+  "version": "1.0.0",
+  "dependencies": {
+    "solid-js": "^1.8.0",
+    "lit": "^3.0.0",
+    "react-native": "^0.75.0"
+  }
+}
