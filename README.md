@@ -43,18 +43,25 @@ npx @oke3/opencode-codemap generate ./path
 
 # Generate to a different output directory
 npx @oke3/opencode-codemap generate ./path --output ./out
+
+# Update — re-scans and only overwrites files that changed (preserves manual edits)
+npx @oke3/opencode-codemap update ./path
 ```
 
 ## What it detects
 
 | Project type | Detection method | Example output |
 |---|---|---|
-| **Web frameworks** | `package.json` dependencies | Next.js, React, Astro, Express, Hono, Angular, NestJS… |
+| **Web frameworks** | `package.json` dependencies | Next.js, React, Astro, Solid, Qwik, Lit, Hono, Angular, NestJS… |
+| **Mobile frameworks** | `package.json` dependencies | React Native, Expo |
 | **CLI tools** | `package.json` `bin` field | CLI tool config, entry point routing |
 | **Libraries** | `package.json` `main` / `exports` | Library conventions, build commands |
 | **Python** | `pyproject.toml`, `setup.py`, `Pipfile` | Ruff, pytest, black, hatch/poetry/uv |
 | **Go** | `go.mod` | `go test`, `gofmt`, golangci-lint |
 | **Rust** | `Cargo.toml` | `cargo test`, `rustfmt`, clippy |
+| **Docker** | `Dockerfile`, `docker-compose.yml`, `.dockerignore` | Container build, compose commands |
+| **Environment** | `.env.example`, `.env.sample`, `.env.template` | Env var reference |
+| **Config files** | Project-root config files | Tailwind CSS, PostCSS, Prisma, Turbo, Nx, Lerna, Flutter |
 | **Tooling** | Config files + deps | vitest, jest, eslint, prettier, biome, tsc —noEmit |
 
 ## What it generates
@@ -63,6 +70,8 @@ npx @oke3/opencode-codemap generate ./path --output ./out
 |------|---------|
 | **`AGENTS.md`** | Project identity, stack, build/test/lint/format commands, directory structure, conventions, framework-specific notes in natural language |
 | **`opencode.json`** | Runtime config: model selection, permissions, formatters, LSP, instructions reference |
+| **`.cursorrules`** | Cursor AI project rules (framework conventions, lint/test commands) |
+| **`.github/copilot-instructions.md`** | GitHub Copilot project context |
 | **`.opencode/agents/react-dev.md`** | Custom agent persona for React development |
 | **`.opencode/agents/api-dev.md`** | Custom agent persona for API/framework work |
 | **`.opencode/agents/astro-dev.md`** | Custom agent persona (Astro projects) |
@@ -127,12 +136,13 @@ Plugin-based. **Scanners** analyze the project, **generators** produce config fi
 │  Scanner     │  (gitignore-aware tree walk)
 └──────┬───────┘
 ┌──────────────┐
-│  Frameworks  │  Web frameworks from deps, test runners, linters,
-│  Scanner     │  formatters, CLI/lib detection, tsc detection
+│  Frameworks  │  Web/mobile frameworks from deps, test runners, linters,
+│  Scanner     │  formatters, CLI/lib detection, tsc detection, config files
+│              │  (Tailwind, PostCSS, Prisma, Turbo, Nx, Lerna, Flutter)
 └──────┬───────┘
 ┌──────────────┐
 │  Languages   │  Python (pyproject.toml), Go (go.mod), Rust (Cargo.toml)
-│  Scanner     │  Language-specific tooling detection
+│  Scanner     │  Language-specific tooling detection, Docker, env files
 └──────┬───────┘
        │
        ▼
@@ -141,10 +151,10 @@ Plugin-based. **Scanners** analyze the project, **generators** produce config fi
 └────────┬─────────┘
          │
          ▼
-┌──────────────┬──────────────┬─────────────────┬──────────────┐
-│  AGENTS.md   │ opencode.json│ Custom Agents   │  Commands    │
-│  Generator   │  Generator   │  Generator      │  Generator   │
-└──────────────┴──────────────┴─────────────────┴──────────────┘
+┌──────────────┬──────────────┬─────────────────┬──────────────┬─────────────────┐
+│  AGENTS.md   │ opencode.json│ Custom Agents   │  Commands    │  Multi-Tool     │
+│  Generator   │  Generator   │  Generator      │  Generator   │  Generator      │
+└──────────────┴──────────────┴─────────────────┴──────────────┴─────────────────┘
 ```
 
 ### Adding a scanner
@@ -202,7 +212,7 @@ git clone https://github.com/oke3/opencode-codemap
 cd opencode-codemap
 npm install
 npm run dev        # watch mode
-npm test           # 33+ tests
+npm test           # 38+ tests
 npm run build      # production build
 npm run lint       # type-check
 ```
