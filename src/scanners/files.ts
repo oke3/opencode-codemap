@@ -50,6 +50,7 @@ function walk(root: string): WalkEntry[] {
 
       if (s.isDirectory()) {
         if (name === "node_modules" || name === ".git") continue;
+        if (name === "fixtures" || name === "__fixtures__" || name === "examples") continue;
         entries.push({ path: rel, isDir: true });
         walkDir(abs);
       } else {

@@ -5,6 +5,7 @@ import { scan } from "../../src/index.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const fixtures = resolve(__dirname, "../fixtures/react-app");
+const leakageFixture = resolve(__dirname, "../fixtures/leakage-test");
 
 describe("scan", () => {
   it("discovers file structure", async () => {
@@ -35,5 +36,15 @@ describe("scan", () => {
     // the test verifies the scanner doesn't crash on .gitignore rules
     const model = await scan(fixtures);
     expect(model.fileStructure.totalFiles).toBeGreaterThanOrEqual(3);
+  });
+
+  it("excludes fixtures, __fixtures__, and examples directories", async () => {
+    const model = await scan(leakageFixture);
+    // Only src/index.ts should be counted — fixtures/ and examples/ are excluded
+    expect(model.fileStructure.totalFiles).toBe(1);
+    expect(model.fileStructure.languages).toEqual({ ".ts": 1 });
+    expect(model.fileStructure.entryPoints).toContain("src/index.ts");
+    expect(model.fileStructure.entryPoints).not.toContain(expect.stringContaining("fixtures"));
+    expect(model.fileStructure.entryPoints).not.toContain(expect.stringContaining("examples"));
   });
 });
