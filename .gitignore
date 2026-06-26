@@ -2,3 +2,10 @@ node_modules/
 dist/
 *.tsbuildinfo
 .scan.json
+
+# Generated config files in test fixtures
+test/fixtures/**/AGENTS.md
+test/fixtures/**/opencode.json
+test/fixtures/**/.cursorrules
+test/fixtures/**/.github/
+test/fixtures/**/.opencode/
