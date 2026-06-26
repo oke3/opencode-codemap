@@ -92,7 +92,7 @@ export async function scan(
     name: projectName,
     fileStructure: files ?? { totalFiles: 0, directories: [], entryPoints: [], hasSrc: false, hasApp: false, hasMonorepo: false, languages: {} },
     frameworks: {
-      primary: fws?.detected?.[0]?.name ?? langTooling?.primary ?? null,
+      primary: fws?.detected?.[0]?.name ?? null,
       detected: fws?.detected ?? [],
     },
     conventions,

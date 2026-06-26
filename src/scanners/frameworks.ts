@@ -52,13 +52,24 @@ function detectTestRunner(pkg: Record<string, unknown> | null, root: string): st
 }
 
 /**
- * Detect linter from config files.
+ * Detect linter from config files and package.json scripts.
  */
-function detectLinter(root: string): string | null {
+function detectLinter(pkg: Record<string, unknown> | null, root: string): string | null {
   if (existsSync(join(root, "eslint.config.js")) || existsSync(join(root, ".eslintrc.js")) || existsSync(join(root, ".eslintrc.json"))) return "eslint";
   if (existsSync(join(root, "biome.json")) || existsSync(join(root, "biome.jsonc"))) return "biome";
   if (existsSync(join(root, "ruff.toml")) || existsSync(join(root, ".ruff.toml"))) return "ruff";
   if (existsSync(join(root, ".rubocop.yml"))) return "rubocop";
+
+  // Check if a lint script uses tsc --noEmit (common for TS-only projects)
+  if (pkg) {
+    const scripts = pkg["scripts"] as Record<string, string> | undefined;
+    if (scripts) {
+      for (const script of Object.values(scripts)) {
+        if (typeof script === "string" && script.includes("tsc --noEmit")) return "tsc";
+      }
+    }
+  }
+
   return null;
 }
 
@@ -114,6 +125,17 @@ export const frameworksScanner: ScannerPlugin = {
       }
     }
 
+    // Detect CLI tools and libraries (only if no web framework found)
+    if (pkg && detected.length === 0) {
+      if (pkg["bin"]) {
+        const bin = pkg["bin"];
+        const binName = typeof bin === "string" ? bin.replace(/\.(js|ts|mjs)$/, "") : Object.keys(bin as Record<string, string>)[0];
+        detected.push({ name: "CLI", version: (pkg["version"] as string) ?? null });
+      } else if (pkg["main"] || pkg["exports"] || pkg["module"]) {
+        detected.push({ name: "Library", version: (pkg["version"] as string) ?? null });
+      }
+    }
+
     function readStrictMode(path: string): boolean {
       try {
         const content = JSON.parse(readFileSync(path, "utf-8")) as Record<string, unknown>;
@@ -125,14 +147,14 @@ export const frameworksScanner: ScannerPlugin = {
     }
 
     // Derive primary framework
-    const priority = ["Next.js", "Astro", "Remix", "Nuxt", "SvelteKit", "React", "Vue", "Angular", "Express", "Fastify", "Hono", "NestJS"];
+    const priority = ["Next.js", "Astro", "Remix", "Nuxt", "SvelteKit", "React", "Vue", "Angular", "Express", "Fastify", "Hono", "NestJS", "CLI", "Library"];
     const primary = priority.find((f) => detected.some((d) => d.name === f)) || detected[0]?.name || null;
 
     const data: RawFrameworks = {
       detected,
       conventions: {
         testRunner: detectTestRunner(pkg, context.projectRoot),
-        linter: detectLinter(context.projectRoot),
+        linter: detectLinter(pkg, context.projectRoot),
         formatter: detectFormatter(pkg, context.projectRoot),
         typescript: !!tsconfig || detected.some((d) => d.name === "Astro" || d.name === "Next.js" || d.name === "SvelteKit" || d.name === "Remix" || d.name === "Nuxt"),
         strictMode: tsconfig ? readStrictMode(join(context.projectRoot, "tsconfig.json")) : false,

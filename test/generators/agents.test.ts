@@ -55,4 +55,27 @@ describe("agents generator", () => {
     expect(agents!.content).toContain("cargo test");
     expect(agents!.content).toContain("cargo build");
   });
+
+  it("detects CLI tool project from bin field", async () => {
+    const model = await scan(resolve(fixtures, "cli-tool"));
+    expect(model.frameworks.primary).toBe("CLI");
+    expect(model.conventions.testRunner).toBe("vitest");
+    expect(model.conventions.linter).toBe("tsc");
+  });
+
+  it("generates AGENTS.md for a CLI tool project", async () => {
+    const model = await scan(resolve(fixtures, "cli-tool"));
+    const files = await generate(model);
+    const agents = files.find((f) => f.path === "AGENTS.md");
+    expect(agents).toBeDefined();
+    expect(agents!.content).toContain("**CLI**");
+    expect(agents!.content).toContain("vitest");
+    expect(agents!.content).toContain("tsc");
+  });
+
+  it("detects Library project from main/exports field", async () => {
+    const model = await scan(resolve(fixtures, "ts-lib"));
+    expect(model.frameworks.primary).toBe("Library");
+    expect(model.conventions.testRunner).toBe("vitest");
+  });
 });
