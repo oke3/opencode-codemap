@@ -66,6 +66,12 @@ export interface LanguageTooling {
   env: EnvInfo | null;
 }
 
+export interface WorkspaceModel {
+  name: string;
+  root: string;
+  model: ProjectModel;
+}
+
 export interface ProjectModel {
   root: string;
   name: string;
@@ -76,4 +82,6 @@ export interface ProjectModel {
   langTooling: LanguageTooling;
   /** Raw scan data preserved for generator plugins */
   raw: Record<string, unknown>;
+  /** Workspace projects (monorepo) */
+  workspaces?: WorkspaceModel[];
 }

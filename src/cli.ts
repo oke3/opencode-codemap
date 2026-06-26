@@ -188,7 +188,9 @@ sharedFlags(
 
   if (!options.quiet) {
     const fw = model.frameworks.primary ?? "no framework detected";
-    console.log(`  ${dim("found")} ${model.fileStructure.totalFiles} files — ${gray(fw)}`);
+    const wsCount = model.workspaces?.length ?? 0;
+    const wsLabel = wsCount > 0 ? `, ${wsCount} workspace${wsCount > 1 ? "s" : ""}` : "";
+    console.log(`  ${dim("found")} ${model.fileStructure.totalFiles} files — ${gray(fw)}${wsLabel}`);
     process.stdout.write(dim("  gen   "));
   }
 

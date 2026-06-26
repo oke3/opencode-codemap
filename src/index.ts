@@ -5,7 +5,7 @@
  *   import { scan, generate, buildProject } from "@oke3/opencode-codemap";
  */
 
-import { basename } from "node:path";
+import { basename, relative } from "node:path";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ProjectModel, LanguageTooling } from "./core/project.js";
@@ -17,6 +17,8 @@ import type { GeneratedFile } from "./core/generator.js";
 import { filesScanner } from "./scanners/files.js";
 import { frameworksScanner } from "./scanners/frameworks.js";
 import { languagesScanner } from "./scanners/languages.js";
+import { monorepoScanner } from "./scanners/monorepo.js";
+import type { MonorepoData } from "./scanners/monorepo.js";
 import { agentsGenerator } from "./generators/agents.js";
 import { configGenerator } from "./generators/config.js";
 import { agentsConfigGenerator } from "./generators/agents-config.js";
@@ -29,6 +31,7 @@ export const defaultScanners: ScannerPlugin[] = [
   filesScanner,
   frameworksScanner,
   languagesScanner,
+  monorepoScanner,
 ];
 
 export const defaultGenerators: GeneratorPlugin[] = [
@@ -112,6 +115,23 @@ export async function scan(
     else if (ext === ".rs") model.langTooling.primary = "Rust";
   }
 
+  // Scan workspaces if monorepo detected
+  const monorepo = raw.monorepo as MonorepoData | undefined;
+  if (monorepo?.isMonorepo && monorepo.workspaces.length > 0) {
+    const workspaceModels: import("./core/project.js").WorkspaceModel[] = [];
+    for (const ws of monorepo.workspaces) {
+      try {
+        const wsModel = await scan(ws.root, options);
+        workspaceModels.push({ name: ws.name, root: ws.root, model: wsModel });
+      } catch {
+        // Skip workspaces that fail to scan
+      }
+    }
+    if (workspaceModels.length > 0) {
+      model.workspaces = workspaceModels;
+    }
+  }
+
   return model;
 }
 
@@ -135,10 +155,28 @@ export async function buildProject(
 ): Promise<{ model: ProjectModel; files: GeneratedFile[] }> {
   const model = await scan(projectRoot, options);
   const files = await generate(model, options);
+
+  // Generate per-workspace files, prefixed with workspace relative path
+  if (model.workspaces) {
+    for (const ws of model.workspaces) {
+      try {
+        const wsFiles = await generate(ws.model, options);
+        const relPath = relative(projectRoot, ws.root);
+        for (const f of wsFiles) {
+          f.path = join(relPath, f.path);
+        }
+        files.push(...wsFiles);
+      } catch {
+        // Skip workspaces that fail to generate
+      }
+    }
+  }
+
   return { model, files };
 }
 
 // Re-export types for plugin authors
-export type { ProjectModel } from "./core/project.js";
+export type { ProjectModel, WorkspaceModel } from "./core/project.js";
 export type { ScannerPlugin, ScanContext, ScanResult } from "./core/scanner.js";
 export type { GeneratorPlugin, GeneratedFile } from "./core/generator.js";
+export type { MonorepoData, WorkspaceInfo } from "./scanners/monorepo.js";

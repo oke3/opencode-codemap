@@ -3,7 +3,7 @@
  * Honors .gitignore via the `ignore` package.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import type { Stats } from "node:fs";
 import { join, relative, extname, basename } from "node:path";
 import ignore from "ignore";
@@ -98,7 +98,15 @@ export const filesScanner: ScannerPlugin = {
 
     const hasSrc = dirs.some((d) => d === "src" || d.startsWith("src/"));
     const hasApp = dirs.some((d) => d === "app" || d.startsWith("app/"));
-    const hasMonorepo = dirs.some((d) => d === "packages" || d.startsWith("packages/"));
+
+    // Monorepo indicators: workspace config files or packages/apps/libs directories
+    const hasMonorepoConfig = existsSync(join(context.projectRoot, "pnpm-workspace.yaml"))
+      || existsSync(join(context.projectRoot, "lerna.json"))
+      || existsSync(join(context.projectRoot, "nx.json"));
+    const hasWorkspaceDirs = dirs.some((d) => d === "packages" || d.startsWith("packages/")
+      || d === "apps" || d.startsWith("apps/")
+      || d === "libs" || d.startsWith("libs/"));
+    const hasMonorepo = hasMonorepoConfig || hasWorkspaceDirs;
 
     const data: FileStructure = {
       totalFiles: files.length,
